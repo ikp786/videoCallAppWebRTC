@@ -17,3 +17,13 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+git add storage/app/.gitignore
+git add storage/app/public/.gitignore
+git add storage/framework/.gitignore
+git add storage/framework/cache/.gitignore
+git add storage/framework/cache/data/.gitignore
+git add storage/framework/sessions/.gitignore
+git add storage/framework/testing/.gitignore
+git add storage/framework/views/.gitignore
+git add storage/logs/.gitignore
