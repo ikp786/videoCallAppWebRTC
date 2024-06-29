@@ -63,4 +63,4 @@ jobs:
             php artisan db:seed --force
             php artisan config:cache
             php artisan config:clear
-            # chmod -R 777 storage bootstrap/cache
+            # chmod -R 777 ./storage ./bootstrap/cache

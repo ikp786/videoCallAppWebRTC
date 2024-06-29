@@ -16,7 +16,7 @@
     <video id="localVideo" autoplay playsinline></video>
     <video id="remoteVideo" autoplay playsinline></video>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.3.2/peer.min.js"></script>
-    <script src="/js/app.js"></script>
+    <script src="{{ asset('js/app.js')}}"></script>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.3.2/dist/peerjs.min.js"></script>
     {{--  <script src="https://cdn.peerjs.com/1.3.1/peerjs.min.js"></script>  --}}
 
