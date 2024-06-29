@@ -1,0 +1,66 @@
+name: Laravel Deployment
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the files
+        uses: actions/checkout@v2
+
+      - name: Deploy to EC2
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.SSH_REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.SSH_REMOTE_USER }}
+          TARGET: ${{ secrets.TARGET_SERVER_PATH }}
+
+      - name: SSH and Deploy Commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_REMOTE_HOST }}
+          username: ${{ secrets.SSH_REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.TARGET_SERVER_PATH }}
+            
+            # Check if .env file exists
+            if [ ! -f .env ]; then
+              cp .env.example .env
+              
+              # Set environment variables
+              echo "APP_NAME=WEBRTC" >> .env
+              echo "APP_ENV=production" >> .env
+              echo "APP_KEY=base64:$(php -r 'echo base64_encode(random_bytes(32));')" >> .env
+              echo "APP_DEBUG=false" >> .env
+              echo "APP_URL=http://3.108.63.236/" >> .env
+
+              echo "DB_CONNECTION=mysql" >> .env
+              echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+              echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+              echo "DB_DATABASE=${{ secrets.DB_DATABASE }}" >> .env
+              echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+              echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+              
+              # Add any other environment variables you need
+            fi
+
+            # Check if database exists and create if it doesn't
+            mysql -h ${{ secrets.DB_HOST }} -u ${{ secrets.DB_USERNAME }} -p${{ secrets.DB_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DB_DATABASE }};"
+
+            composer install --no-interaction --prefer-dist --optimize-autoloader
+            
+            npm install
+            php artisan key:generate --force
+            php artisan migrate --force
+            php artisan db:seed --force
+            php artisan config:cache
+            php artisan config:clear
+            chmod -R 777 storage bootstrap/cache
