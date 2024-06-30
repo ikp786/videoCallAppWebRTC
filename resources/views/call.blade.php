@@ -15,7 +15,6 @@
             margin: 10px;
         }
     </style>
-    
 </head>
 <body>
     <video id="localVideo" autoplay playsinline></video>
@@ -30,7 +29,6 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.3.2/peer.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/peerjs@1.3.2/dist/peerjs.min.js"></script>
-    <script src="{{ asset('js/peer.js') }}"></script>
     <script>
         const localVideo = document.getElementById('localVideo');
         const remoteVideo = document.getElementById('remoteVideo');
@@ -117,6 +115,14 @@
                             localStream.addTrack(newVideoTrack);
                             localVideo.srcObject = newStream;
                             currentDeviceId = nextDeviceId;
+
+                            if (currentCall) {
+                                currentCall.peerConnection.getSenders().forEach(sender => {
+                                    if (sender.track.kind === 'video') {
+                                        sender.replaceTrack(newVideoTrack);
+                                    }
+                                });
+                            }
                         }).catch(error => {
                             console.error('Error switching camera:', error);
                         });
@@ -142,6 +148,15 @@
                         localStream.removeTrack(sender);
                         localStream.addTrack(screenTrack);
                         localVideo.srcObject = localStream;
+
+                        if (currentCall) {
+                            currentCall.peerConnection.getSenders().forEach(sender => {
+                                if (sender.track.kind === 'video') {
+                                    sender.replaceTrack(screenTrack);
+                                }
+                            });
+                        }
+
                         isScreenSharing = true;
                         shareScreenButton.style.display = 'none';
                         stopScreenShareButton.style.display = 'inline-block';
@@ -163,6 +178,14 @@
                         localStream.removeTrack(localStream.getVideoTracks()[0]);
                         localStream.addTrack(newVideoTrack);
                         localVideo.srcObject = localStream;
+
+                        if (currentCall) {
+                            currentCall.peerConnection.getSenders().forEach(sender => {
+                                if (sender.track.kind === 'video') {
+                                    sender.replaceTrack(newVideoTrack);
+                                }
+                            });
+                        }
                     }).catch(error => {
                         console.error('Error accessing media devices.', error);
                     });
